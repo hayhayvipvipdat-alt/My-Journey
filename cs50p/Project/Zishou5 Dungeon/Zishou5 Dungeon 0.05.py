@@ -17,7 +17,7 @@ mage = {
     "mana":6,
     "action": {
         "attack":5,
-        "fireball": 200000
+        "fireball":15
     },
     "win": "It shouldn't be this easy . . according to your calculation ofcourse.",
     "lost": "Outdated data . .",
@@ -27,10 +27,11 @@ mage = {
 skeleton = {
     "name": "Bone Man",
     "hp":30,
-    "attack":2,
+    "attack":5,
     "taunting": "I got a bone to pick with ya ~~",
     "hit": "A slash of shining metal slice barely pass you.",
-    "dead": "He got no more bone to pick with you. ."
+    "dead": "He got no more bone to pick with you. .",
+    "S-dead": "Just another pile of bones."
 }
 
 weird_man = {
@@ -39,13 +40,19 @@ weird_man = {
     "attack":4,
     "tauting": "Huh.. you make a good soup alright. . COME HERE ~~",
     "hit": "His attack aim to chopped of your limbs.",
-    "dead": "It shouldn't have ended like this. ."
+    "dead": "It shouldn't have ended like this. .",
+    "S-dead": "The chef hat lying on the ground."
 }
 
-map = {
-        "startingroom",
-        "boneroom" 
-    }
+slime = {
+    "name": "Slimy Ball",
+    "hp":20,
+    "attack":1,
+    "taunting": "The gooey ball seem exited to meet you.",
+    "hit": "It tried to hug you, but can't",
+    "dead": "You kill the poor thingy. .",
+    "S-dead": "A gooey puddle of liquid."
+}
 
 def location(x):
     dungeon = x
@@ -62,24 +69,6 @@ def location(x):
             print("-", place)
         answer = input("Where next ?").strip().lower()
     return answer
-
-def combat_command (player):
-    skill = player['action']
-    print('-' * 5)
-    print("What you want to do ?")
-    for action in skill:
-        print("-", action)
-    print('-' * 5)
-    action = input("").strip().lower()
-    while action not in player['action']:
-        print('-' * 5)
-        print("You better than this . .")
-        print('-' * 5)
-        print("What you want to do ?")
-        for action in skill:
-            print("-", action)
-        action = input("").strip().lower()
-    return player['action'][action]
 
 def class_select(question):
     print('-' * 5)
@@ -99,7 +88,27 @@ def intro():
     print("Stand before you is a huge grey stone door, the more you look at it, the more unsettling it become . . ")
 
 intro()
-player = class_select("Warrior ? or those disgusting mage ?")
+player = class_select("Warrior ? or those disgusting mage ? ")
+
+def pick_enemy(enemies):
+    while True:
+        for number, enemy in enumerate(enemies):
+            if enemy['hp'] > 0:
+                print(number + 1,"-", enemy['name'])
+        try:
+            answer = int(input("Who first ? enter a number: "))
+            valid_choice = list(range(1, len(enemies) + 1))
+        except ValueError:
+            print('-' * 5)
+            print("Pick the enemy number dude ~")
+            continue
+        while answer not in valid_choice:
+            print("Huh, don't be lazy like that ~")
+            for number, enemy in enumerate(enemies):
+                if enemy['hp'] > 0:
+                    print(number + 1,"-", enemy['name'])
+            answer = int(input("Who first ?"))
+        return enemies[answer - 1]
    
 def combat_command (player):
     skill = player['action']
@@ -119,7 +128,9 @@ def combat_command (player):
         action = input("").strip().lower()
     return player['action'][action]
 
-def player_turn (player, enemy):
+def player_turn (player, enemies):
+    enemy = pick_enemy(enemies)
+    print('-' * 5)
     damage = combat_command(player)
     enemy['hp'] -= damage
     if enemy['hp'] > 0:
@@ -133,6 +144,10 @@ def player_turn (player, enemy):
     return enemy['hp']
 
 def enemy_turn (player, enemy):
+    if enemy['hp'] <= 0:
+        print('-' * 5)
+        print(enemy['S-dead'])
+        return player['hp']
     damage = enemy['attack']
     player['hp'] -= damage
     if player['hp'] > 0:
@@ -144,16 +159,25 @@ def enemy_turn (player, enemy):
         print(player['lost'])
     return player['hp']
 
-def combat(player, enemy):
+def combat(player, enemies):
     clear = None
     turn = 1
+    enemy_number = len(enemies)
+    dead_enemy = 0
     while True:
-        print("Turn:", turn)
-        player_turn(player, enemy)
-        if enemy['hp'] <= 0:
+        if dead_enemy == enemy_number:
             clear = "WON"
-            break
-        enemy_turn(player, enemy)
+            return clear
+        print("Turn:", turn)
+        player_turn(player, enemies)
+        dead_enemy = 0
+        for enemy in enemies:
+            if enemy['hp'] <= 0:
+                dead_enemy += 1
+                continue
+        for enemy in enemies:
+            enemy_turn(player, enemy)
+        print('-' * 5)
         turn += 1
         if player['hp'] <= 0:
             clear = "LOST"
@@ -174,16 +198,14 @@ def retry(question):
 
 def kitchen(player):
     clear = False
-    death = False
-    if death == True:
-        print("You fucking CAN'T did it. . ")
-        return clear, player
-    enemy = weird_man.copy()
+    enemy_list = [weird_man.copy(), slime.copy(), slime.copy()]
+    enemies = list(enemy_list)
+    print('-' * 5)
     print('A kitchen ? In the middle of this dark dungeon ?')
     print('Suddently you sense a chilling wind slip across your shoulder, weirdly chilling in this unbelievable scenery')
     print('Human. . faces ? everywhere in this kitchen.. you move as yourself try to not step on any of them')
     print('-' * 5)
-    print(f"In the far corner near the freezer you saw a {enemy['name']}!")
+    print(f"In the far corner near the freezer you saw a strange man!")
     print('What are you doing in my kitchen ? The huge figure ask, hold tightly the kitchen knife in his hand')
     if player == mage:
         print('-' * 5)
@@ -197,26 +219,30 @@ def kitchen(player):
         print('C. Your face is my ass')
     answer = input('').strip().upper()
     if answer not in ['B']:
-        dungeon_master["kitchen"]['fight'] = True
         print('-' * 5)
         print('The man started to run toward you screaming.. prepare to fight !')
-        print(enemy['tauting'])
+        print(weird_man['tauting'])
+        print('-' * 5)
         while True:
-            enemy = weird_man.copy()
-            clear = combat(player, enemy)
+            current_player = player.copy()
+            enemy_list = [weird_man.copy(), slime.copy(), slime.copy()]
+            enemies = list(enemy_list)
+            clear = combat(current_player, enemies)
             if clear == "LOST":
                 answer = retry("Wanna give it another go ? YES/NO")
+                while answer not in ['YES', 'NO']:
+                    answer = retry("Wanna give it another go ? YES/NO")
                 if answer == "NO":
                     print("Cool, now die bitch !")
-                    death = True
                     clear = False
                     break
+                elif answer == "YES":
+                    continue
             elif clear == "WON":
-                print('-' * 5)
                 print(player['win'])
                 clear = True
                 break
-        return clear, player
+        return clear, current_player
     else:
         print('-' * 5)
         print("Ho Ho Ho ~ The truth is i just found the perfect spice for ALL of my food, I'm busy")
@@ -234,66 +260,69 @@ def room1(player):
         clear = True
         return clear, player
     clear = False
-    death = False
-    if death == True:
-        print("You fucking CAN'T did it. . ")
-        return clear, player
-    enemy = skeleton.copy()
-    print('-' * 5)
-    print(f"You encounter {enemy['name']}!")
-    print('-' * 5)
-    print(enemy['taunting'])
+    enemy_list = [skeleton.copy()]
+    enemies = list(enemy_list)
+    for enemy in enemies:
+        print('-' * 5)
+        print(f"You encounter {enemy['name']}!")
+        print(enemy['taunting'])
+        print('-' * 5)
     while True:
-        enemy = skeleton.copy()
-        clear = combat(player, enemy)
+        current_player = player.copy()
+        enemy_list = [skeleton.copy()]
+        enemies = list(enemy_list)
+        clear = combat(current_player, enemies)
         if clear == "LOST":
             answer = retry("Wanna give it another go ? YES/NO")
+            while answer not in ['YES', 'NO']:
+                answer = retry("Wanna give it another go ? YES/NO")
             if answer == "NO":
                 print("Cool, now die bitch !")
-                death = True
                 clear = False
                 break
+            elif answer == "YES":
+                continue
         elif clear == "WON":
-            print('-' * 5)
             print(player['win'])
             clear = True
             break
-    return clear, player
+    return clear, current_player
 
 def room2(player):
     if dungeon_master["boneroom2"]['flag']:
         print('-' * 5)
         print("There is not thing here for you to see.")
-        print("Still, this is your first room, special isn't it ?")
+        print("but it your second room thou, sadly.")
         clear = True
         return clear, player
     clear = False
-    death = False
-    enemy = skeleton.copy()
-    print('-' * 5)
-    print('Fuck ! Another skeleton, again ??')
-    if death == True:
-        print("You fucking CAN'T did it. . ")
-        return clear, player
-    print(f"You encounter {enemy['name']}!")
-    print('-' * 5)
-    print(enemy['taunting'])
+    enemy_list = [skeleton.copy(), slime.copy()]
+    enemies = list(enemy_list)
+    for enemy in enemies:
+        print('-' * 5)
+        print(f"You encounter {enemy['name']}!")
+        print(enemy['taunting'])
+        print('-' * 5)
     while True:
-        enemy = skeleton.copy()
-        clear = combat(player, enemy)
+        current_player = player.copy()
+        enemy_list = [skeleton.copy(), slime.copy()]
+        enemies = list(enemy_list)
+        clear = combat(current_player, enemies)
         if clear == "LOST":
             answer = retry("Wanna give it another go ? YES/NO")
+            while answer not in ['YES', 'NO']:
+                answer = retry("Wanna give it another go ? YES/NO")
             if answer == "NO":
                 print("Cool, now die bitch !")
-                death = True
                 clear = False
                 break
+            elif answer == "YES":
+                continue
         elif clear == "WON":
-            print('-' * 5)
             print(player['win'])
             clear = True
             break
-    return clear, player
+    return clear, current_player
 
 dungeon_master = {
     "zeroroom": {
@@ -321,7 +350,12 @@ dungeon_master = {
 def game(player):
     current_location = dungeon_master["zeroroom"]['path']
     while True:
+        if dungeon_master["kitchen"]['flag']:
+            print('-' * 5)
+            print("That's it, I still planted for more stuff but that's all for now, thanks for playing")
+            return player
         print('-' * 5)
+        print(player['hp'])
         print("As you stand in this cold dark room, there is only one way forward.")
         answer = location(current_location) 
         current_location = dungeon_master[answer]['path']
