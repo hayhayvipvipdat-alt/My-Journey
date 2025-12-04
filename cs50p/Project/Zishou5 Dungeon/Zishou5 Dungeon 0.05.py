@@ -1,10 +1,136 @@
-# Practice combat for more bit
+#Spells
+
+def nothing(player, enemies):
+    return player, enemies
+
+def fireball(player, enemies):
+    print('-' * 5)
+    print("As you channel your magic, they only get to look.")
+    print('-' * 5)
+    damage = 30
+    for enemy in enemies:
+        enemy['hp'] -= damage
+        print(f"Your attack connected ! It hit for {damage} damage !")
+    print('-' * 5)
+    print("It just that cool isn't it ?")
+    print("Your fire consume the whole room, blazzing everything in sigh !")  
+    print('-' * 5)  
+    for enemy in enemies:
+        print(f"{enemy['name']}'s hp remaining is: {enemy['hp']}!")
+    return player, enemy['hp']
+
+def attack(player, enemies):
+    enemy = pick_enemy(enemies)
+    print('-' * 5)
+    print(player['hit'])
+    print('-' * 5)
+    damage = 15
+    enemy['hp'] -= damage
+    print(f"Your attack connected ! It hit for {damage} damage !")
+    print('-' * 5)
+    print("Melee wasn't your cup of tea, but a wand is as good as any stick !")
+    print(f"{enemy['name']}'s hp remaining is: {enemy['hp']}!")
+    return player, enemy['hp']
+
+#Inventory
+
+def potion(player, enemies):
+    if ipotion['flag'] == True:
+        print('-' * 5)
+        print("You remembered yourself used it earlier. Now it just a hole in your backpocket.")
+        return player, enemies
+    heal = 10
+    print('-' * 5)
+    print("You only got one of these, but it time to use it.")
+    player['hp'] += heal
+    print(f"That was refreshing ~ You healed for {heal} hp !")
+    ipotion['flag'] = True
+    return player['hp'], enemies
+
+def firebolt(player, enemies):
+    enemy_number = len(enemies)
+    dead_enemy = 0
+    for enemy in enemies:
+        if enemy['hp'] <= 0:
+            dead_enemy += 1
+    if enemy_number == dead_enemy:
+        return nothing
+    if ifirebolt['flag'] == True:
+        print('-' * 5)
+        print("You reached into your pocket..these's nothing there.")
+        return player, enemies
+    print("You got this from a backstreet store, hope it is a wise decision.")
+    enemy = pick_enemy(enemies)
+    damage = 10
+    enemy['hp'] -= damage
+    print('-' * 5)
+    print(f"You throw the bottle ! The stuff spread quickly !")
+    print(f"It hit for {damage} damage !")
+    ifirebolt['flag'] = True
+    return player, enemy['hp']
+
+def pick_item(inventory):
+    all_item = len(inventory)
+    used_item = 0
+    for item in inventory:
+            if item['flag']:
+                used_item += 1
+    if all_item == used_item:
+        return nothing
+    while True:
+        print('-' * 5)
+        x = input("Wanna use item ? y/n ").strip().lower()
+        while x not in ["y", "n", "yes", "no"]:
+            print('-' * 5)
+            print("just answer me ~")
+            x = input("Wanna use item ? y/n ").strip().lower()
+        if x in ["n", "no"]:
+            return nothing
+        if x in ["y", "yes"]:
+            print('-' * 5)
+            for number, item in enumerate(inventory):
+                if item['flag'] == False:
+                    print(number + 1,"-", item['name'])
+            try:
+                answer = int(input("Which one ? enter a number: "))
+                valid_choice = list(range(1, len(inventory) + 1))
+            except ValueError:
+                print('-' * 5)
+                print("Pick the enemy number dude ~")
+                continue
+            while answer not in valid_choice:
+                print('-' * 5)
+                print("Huh, don't be lazy like that ~")
+                for number, item in enumerate(inventory):
+                    if item['flag'] == False:  
+                        print(number + 1,"-", item['name'])
+                answer = int(input("Which one ?"))
+            return inventory[answer - 1]['use']
+    
+    
+ipotion = {
+     "name": "A fucking potion",
+     "flag": False,
+     "use": potion
+}
+
+
+ifirebolt = {
+     "name": "A bottle of red gooey liquid",
+     "flag": False,
+     "use": firebolt
+}
+
+inventory = [ipotion, ifirebolt]
+
+# Stats for stuff here 
+
 warrior = {
     "name": "Cave man",
     "hp":20,
     "action": {
-        "attack":10,
-        "bigbonk": 15,
+        "attack",
+        "bigbonk"
     },
     "win": "It just another exercise for you !",
     "lost": "You got a cramped today. .",
@@ -16,8 +142,8 @@ mage = {
     "hp":10,
     "mana":6,
     "action": {
-        "attack":5,
-        "fireball":15
+        "attack": attack,
+        "fireball": fireball,
     },
     "win": "It shouldn't be this easy . . according to your calculation ofcourse.",
     "lost": "Outdated data . .",
@@ -27,7 +153,7 @@ mage = {
 skeleton = {
     "name": "Bone Man",
     "hp":30,
-    "attack":5,
+    "attack":1,
     "taunting": "I got a bone to pick with ya ~~",
     "hit": "A slash of shining metal slice barely pass you.",
     "dead": "He got no more bone to pick with you. .",
@@ -36,7 +162,7 @@ skeleton = {
 
 weird_man = {
     "name": "A tall man, wearing a chef hat",
-    "hp":50,
+    "hp":60,
     "attack":4,
     "tauting": "Huh.. you make a good soup alright. . COME HERE ~~",
     "hit": "His attack aim to chopped of your limbs.",
@@ -54,6 +180,8 @@ slime = {
     "S-dead": "A gooey puddle of liquid."
 }
 
+# Navigation
+
 def location(x):
     dungeon = x
     print('-' * 5)
@@ -70,6 +198,8 @@ def location(x):
         answer = input("Where next ?").strip().lower()
     return answer
 
+#Class selection
+
 def class_select(question):
     print('-' * 5)
     answer = input(question).strip().lower()
@@ -81,7 +211,9 @@ def class_select(question):
         return mage
     elif answer == "warrior":
         return warrior
-    
+
+#Start of the game  
+
 def intro():
     print('-' * 5)
     print("You on time . . get in before you collapse kid.")
@@ -90,8 +222,11 @@ def intro():
 intro()
 player = class_select("Warrior ? or those disgusting mage ? ")
 
+#Combat
+
 def pick_enemy(enemies):
     while True:
+        print('-' * 5)
         for number, enemy in enumerate(enemies):
             if enemy['hp'] > 0:
                 print(number + 1,"-", enemy['name'])
@@ -110,7 +245,7 @@ def pick_enemy(enemies):
             answer = int(input("Who first ?"))
         return enemies[answer - 1]
    
-def combat_command (player):
+def combat_command(player):
     skill = player['action']
     print('-' * 5)
     print("What you want to do ?")
@@ -126,22 +261,13 @@ def combat_command (player):
         for action in skill:
             print("-", action)
         action = input("").strip().lower()
-    return player['action'][action]
+    return action
 
-def player_turn (player, enemies):
-    enemy = pick_enemy(enemies)
-    print('-' * 5)
-    damage = combat_command(player)
-    enemy['hp'] -= damage
-    if enemy['hp'] > 0:
-        print('-' * 5)
-        print(player['hit'])
-        print(f"Your attack connected ! It hit for {damage} damage !")
-        print(f"{enemy['name']}'s hp remaining is: {enemy['hp']}!")
-    else:
-        print('-' * 5)
-        print(enemy['dead'])
-    return enemy['hp']
+def player_turn(player, enemies):
+    answer = combat_command(player)
+    player['action'][answer](player, enemies)
+    pick_item(inventory)(player, enemies)
+    return player, enemies
 
 def enemy_turn (player, enemy):
     if enemy['hp'] <= 0:
@@ -195,6 +321,8 @@ def retry(question):
     elif answer == "NO":
         return "NO" 
     
+    
+#Room
 
 def kitchen(player):
     clear = False
@@ -248,10 +376,8 @@ def kitchen(player):
         print("Ho Ho Ho ~ The truth is i just found the perfect spice for ALL of my food, I'm busy")
         print("He disappeared into a huge iron door, it seem to be your only way forward too")
         clear = True
-        return clear, player
-        
-
-    
+        return clear, player    
+   
 def room1(player):
     if dungeon_master["boneroom"]['flag']:
         print('-' * 5)
@@ -260,7 +386,7 @@ def room1(player):
         clear = True
         return clear, player
     clear = False
-    enemy_list = [skeleton.copy()]
+    enemy_list = [skeleton.copy(), skeleton.copy()]
     enemies = list(enemy_list)
     for enemy in enemies:
         print('-' * 5)
@@ -269,7 +395,7 @@ def room1(player):
         print('-' * 5)
     while True:
         current_player = player.copy()
-        enemy_list = [skeleton.copy()]
+        enemy_list = [skeleton.copy(), skeleton.copy()]
         enemies = list(enemy_list)
         clear = combat(current_player, enemies)
         if clear == "LOST":
@@ -324,6 +450,8 @@ def room2(player):
             break
     return clear, current_player
 
+#Map (Kinda)
+
 dungeon_master = {
     "zeroroom": {
         "path": { "boneroom", "zeroroom" },
@@ -347,6 +475,8 @@ dungeon_master = {
 
 }
 
+#The real game
+
 def game(player):
     current_location = dungeon_master["zeroroom"]['path']
     while True:
@@ -355,7 +485,6 @@ def game(player):
             print("That's it, I still planted for more stuff but that's all for now, thanks for playing")
             return player
         print('-' * 5)
-        print(player['hp'])
         print("As you stand in this cold dark room, there is only one way forward.")
         answer = location(current_location) 
         current_location = dungeon_master[answer]['path']
