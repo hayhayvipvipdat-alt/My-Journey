@@ -34,10 +34,7 @@ Gameplay Features:
 - Choose between multiple rooms, paths, routes, and endings
 - Branching story with consequences
 - Turn-based combat
-- Player class options
-- Unlockable skills and equipment
 - Retry system for battles and game over sequences
-- Hidden routes and special conditions
 
 
 
@@ -61,17 +58,6 @@ Health, mana, skills, and effects
 Dialogue & Choice System
 Branching dialogue with different consequences
 Hidden options and joke choices
-
----
-
-Planned: exception-based secret route
-
-- Retry System
-- Allows replaying battles
-- Handles death/cleared states
-- Prevents soft locks and infinite-game bugs
-
-
 
 ---
 
@@ -100,10 +86,7 @@ Roadmap
 Upcoming improvements:
 
 Fully polished multi-enemy combat
-- AOE attacks
-- Inventory system
 - Items and loot tables
-- Boss mechanics
 - Exception-based hidden route (“the chained child”)
 - Cleaner structure and refactor pass
 

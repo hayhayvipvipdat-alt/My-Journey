@@ -3,9 +3,9 @@ while True:
         x = int(input("How long is your password?"))
     except ValueError:
         print("Invalid input")
+        continue
     if x < 6:
         print("Invalid input")
         continue
-    else:
-        print("Valid Length")
-        break
+    print("Valid Length")
+    break
